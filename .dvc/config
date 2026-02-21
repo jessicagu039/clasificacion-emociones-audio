@@ -1,0 +1,4 @@
+[core]
+    remote = dvcstore
+['remote "dvcstore"']
+    url = s3://amzn-s3-maia-mesd-2026/dvcstore
