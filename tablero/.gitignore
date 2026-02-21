@@ -1,0 +1,12 @@
+# Archivos de sistema y entornos virtuales
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Archivos generados por la app
+uploads/
+instance/
+
+# Variables de entorno 
+.env
