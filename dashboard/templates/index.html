@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detección de Emociones por Voz</title>
+    <!-- Tailwind CSS para estilos rápidos y modernos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js para la gráfica de barras -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        /* Estilos personalizados para el espectrograma simulado */
+        .spectrogram-bg {
+            background: linear-gradient(180deg, #0f0c29, #302b63, #24243e);
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/c/c5/Spectrogram-19thC.png');
+            /* Placeholder */
+            background-size: cover;
+            background-position: center;
+            background-blend-mode: overlay;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 font-sans text-slate-800">
+
+    <!-- Header -->
+    <header class="bg-indigo-600 text-white p-4 shadow-lg">
+        <div class="container mx-auto text-center">
+            <h1 class="text-2xl font-bold">Detección de Emociones por Voz</h1>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-6 max-w-5xl">
+
+        <!-- Sección de Carga -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+            <h2 class="text-lg font-semibold mb-4 text-indigo-900">Subir Archivo de Audio (.wav):</h2>
+
+            <div class="flex flex-col md:flex-row gap-4 items-center">
+                <div class="flex-1 w-full relative">
+                    <input type="file" id="audioInput" accept=".wav" class="hidden" onchange="updateFileName()">
+                    <div class="flex border border-gray-300 rounded-lg overflow-hidden">
+                        <label for="audioInput"
+                            class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 cursor-pointer transition">
+                            Seleccionar Archivo
+                        </label>
+                        <input type="text" id="fileNameDisplay" placeholder="Ningún archivo seleccionado" readonly
+                            class="flex-1 py-2 px-4 bg-white text-gray-600 focus:outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="simularAnalisis()"
+                class="mt-4 bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-8 rounded-lg shadow-md transition transform hover:scale-105 active:scale-95 w-full md:w-auto">
+                Analizar
+            </button>
+        </div>
+
+        <!-- Resultados  -->
+        <div id="resultsArea" class="hidden transition-opacity duration-500 opacity-0">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+
+                <!-- Emoción Principal -->
+                <div
+                    class="md:col-span-1 bg-gradient-to-br from-orange-400 to-yellow-300 rounded-xl shadow-lg p-6 text-center text-white flex flex-col justify-center items-center relative overflow-hidden">
+                    <div class="absolute inset-0 bg-white opacity-10 blur-xl"></div>
+                    <h3 class="text-lg font-medium relative z-10 opacity-90">Emoción Detectada:</h3>
+
+                    <div class="text-8xl my-4 relative z-10 animate-bounce-slow" id="emojiIcon">
+                        😄
+                    </div>
+
+                    <h2 class="text-4xl font-bold relative z-10" id="emotionLabel">Alegría</h2>
+                    <p class="mt-2 text-sm font-medium bg-white/20 px-3 py-1 rounded-full relative z-10">
+                        Confianza: <span id="confidenceLabel">87%</span>
+                    </p>
+                </div>
+
+                <!-- Espectrograma y Onda -->
+                <div class="md:col-span-2 bg-white rounded-xl shadow-md p-4 flex flex-col">
+                    <h3 class="text-indigo-900 font-semibold mb-2">Espectrograma del Audio</h3>
+                    <!-- Contenedor del Espectrograma -->
+                    <div
+                        class="flex-1 bg-black rounded-lg overflow-hidden relative border border-gray-200 spectrogram-bg h-48 md:h-auto">
+                        <!-- Aquí iría la imagen real generada por Python (Matplotlib) -->
+                        <div
+                            class="absolute bottom-0 left-0 w-full h-1/3 bg-gradient-to-t from-indigo-500/50 to-transparent">
+                        </div>
+
+                        <!-- Simulación de onda de audio con SVG simple -->
+                        <svg class="absolute bottom-2 left-0 w-full h-12 text-blue-400 opacity-80" viewBox="0 0 100 20"
+                            preserveAspectRatio="none">
+                            <path
+                                d="M0 10 Q 5 0 10 10 T 20 10 T 30 10 T 40 10 T 50 10 T 60 10 T 70 10 T 80 10 T 90 10 T 100 10"
+                                stroke="currentColor" fill="transparent" stroke-width="0.5">
+                                <animate attributeName="d" dur="2s" repeatCount="indefinite"
+                                    values="M0 10 Q 5 0 10 10 T 20 10 T 30 10 T 40 10 T 50 10 T 60 10 T 70 10 T 80 10 T 90 10 T 100 10;
+                                        M0 10 Q 5 20 10 10 T 20 10 T 30 10 T 40 10 T 50 10 T 60 10 T 70 10 T 80 10 T 90 10 T 100 10;
+                                        M0 10 Q 5 0 10 10 T 20 10 T 30 10 T 40 10 T 50 10 T 60 10 T 70 10 T 80 10 T 90 10 T 100 10" />
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfica de Barras -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="text-indigo-900 font-semibold mb-4">Probabilidades de Emociones</h3>
+                <div class="relative h-64 w-full">
+                    <canvas id="emotionChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+
+
+        function updateFileName() {
+            const input = document.getElementById('audioInput');
+            const display = document.getElementById('fileNameDisplay');
+            if (input.files.length > 0) {
+                display.value = input.files[0].name;
+            } else {
+                display.value = "";
+            }
+        }
+
+        let myChart = null;
+
+        async function simularAnalisis() {
+            const input = document.getElementById('audioInput');
+            if (input.files.length === 0) {
+                alert("Selecciona un archivo .wav");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', input.files[0]);
+
+            // UI de carga
+            const btn = document.querySelector('button');
+            btn.innerText = "Analizando...";
+            btn.disabled = true;
+
+            try {
+                // Petición al Backend
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    mostrarResultados(data); // Pasamos los datos reales
+                } else {
+                    alert("Error: " + data.error);
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert("Error de conexión con el servidor");
+            } finally {
+                btn.innerText = "Analizar";
+                btn.disabled = false;
+            }
+        }
+
+        function mostrarResultados(data) {
+            const resultsArea = document.getElementById('resultsArea');
+            resultsArea.classList.remove('hidden');
+            setTimeout(() => resultsArea.classList.remove('opacity-0'), 10);
+
+            // 1. Diccionario de Emojis
+            const emojiMap = {
+                'Alegría': '😄',
+                'Tristeza': '😢',
+                'Enojo': '😠',
+                'Miedo': '😱',
+                'Neutral': '😐'
+            };
+
+            // 2. Actualizar Emoji
+            // Si la emoción no está en la lista, usamos uno genérico
+            const emoji = emojiMap[data.emotion] || '🤔';
+            document.getElementById('emojiIcon').innerText = emoji;
+
+            // 3. Actualizar Textos
+            document.getElementById('emotionLabel').innerText = data.emotion;
+            document.getElementById('confidenceLabel').innerText = data.confidence + "%";
+
+            // 4. Actualizar Espectrograma
+            // Busca el div del espectrograma y reemplaza su contenido o background
+            // Nota: Necesitarás añadir una etiqueta <img> en tu HTML dentro del contenedor del espectrograma
+            // Ejemplo: <img id="spectrogramImage" src="" class="w-full h-full object-cover">
+            const imgElement = document.getElementById('spectrogramImage'); // Asegúrate de crear este ID en el HTML
+            if (imgElement) imgElement.src = data.spectrogram_image;
+
+            // 5. Renderizar Gráfica
+            renderChart(data.probabilities);
+        }
+
+        function mostrarResultados() {
+            const resultsArea = document.getElementById('resultsArea');
+            resultsArea.classList.remove('hidden');
+            // Hack para la transición CSS
+            setTimeout(() => resultsArea.classList.remove('opacity-0'), 10);
+
+            // Datos Simulados (Simulando respuesta del Backend Python)
+            const mockData = {
+                emotion: "Alegría",
+                confidence: 87,
+                probabilities: [87, 5, 3, 2, 3] // Alegría, Tristeza, Enojo, Miedo, Neutral
+            };
+
+            // Actualizar UI
+            document.getElementById('emotionLabel').innerText = mockData.emotion;
+            document.getElementById('confidenceLabel').innerText = mockData.confidence + "%";
+
+            // Renderizar Gráfica
+            renderChart(mockData.probabilities);
+
+            // Scroll suave hacia los resultados
+            resultsArea.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function renderChart(dataValues) {
+            const ctx = document.getElementById('emotionChart').getContext('2d');
+
+            if (myChart) {
+                myChart.destroy();
+            }
+
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Alegría', 'Tristeza', 'Enojo', 'Miedo', 'Neutral'],
+                    datasets: [{
+                        label: 'Probabilidad (%)',
+                        data: dataValues,
+                        backgroundColor: [
+                            'rgba(251, 191, 36, 0.8)', // Alegría (Amarillo)
+                            'rgba(59, 130, 246, 0.8)', // Tristeza (Azul)
+                            'rgba(239, 68, 68, 0.8)',  // Enojo (Rojo)
+                            'rgba(139, 92, 246, 0.8)', // Miedo (Morado)
+                            'rgba(107, 114, 128, 0.8)' // Neutral (Gris)
+                        ],
+                        borderColor: [
+                            'rgba(251, 191, 36, 1)',
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(239, 68, 68, 1)',
+                            'rgba(139, 92, 246, 1)',
+                            'rgba(107, 114, 128, 1)'
+                        ],
+                        borderWidth: 1,
+                        borderRadius: 5,
+                        barPercentage: 0.5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: '#f3f4f6' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
