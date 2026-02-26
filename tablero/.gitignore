@@ -10,3 +10,6 @@ instance/
 
 # Variables de entorno 
 .env
+#modelos
+tablero/model/*.h5
+tablero/model/*.json
