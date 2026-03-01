@@ -38,20 +38,20 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          # A) Bajamos la versión más reciente de la imagen
+          # A) Bajamos la versión más reciente de la imagen desde Docker Hub
           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/api-emociones:latest
           
-          # B) Detenemos el proceso anterior si existe (api_emo)
+          # B) Detenemos y borramos el contenedor anterior para liberar el puerto 5000
           sudo docker stop api_emo || true
           sudo docker rm api_emo || true
           
-          # C) IMPORTANTE: Encendemos la nueva versión con las rutas de la carpeta 'tablero'
-          # El volumen mapea la carpeta física de tu AWS a la ruta /app/tablero/model dentro del contenedor
+          # C) Encendemos la nueva versión
+          # NOTA: Mapeamos el puerto 5000 y conectamos la carpeta del modelo de AWS al contenedor
           sudo docker run -d \
             -p 5000:5000 \
             -v /home/ubuntu/clasificacion-emociones-audio/tablero/model:/app/tablero/model \
             --name api_emo \
             ${{ secrets.DOCKER_USERNAME }}/api-emociones:latest
           
-          # Limpiamos imágenes viejas para no saturar el disco duro de AWS
+          # Limpiamos imágenes huérfanas para ahorrar espacio en el disco de AWS
           sudo docker image prune -f
