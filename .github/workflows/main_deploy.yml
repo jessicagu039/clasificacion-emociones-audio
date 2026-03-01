@@ -1,0 +1,52 @@
+name: Despliegue Automático SER (CI/CD)
+
+# Esto le dice a GitHub que ejecute el robot cada vez que hagas push a la rama 'main'
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  construir-y-desplegar:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. El robot descarga tu código de GitHub
+    - name: Descargar código fuente
+      uses: actions/checkout@v3
+
+    # 2. El robot inicia sesión en tu cuenta de Docker Hub
+    - name: Iniciar sesión en Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    # 3. El robot "cocina" tu caja (Dockerfile) y la sube a tu Docker Hub
+    - name: Construir y subir imagen a Docker Hub
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        # Nombra la imagen usando tu usuario de Docker
+        tags: ${{ secrets.DOCKER_USERNAME }}/api-emociones:latest
+
+    # 4. El robot se conecta a tu AWS y actualiza el servidor
+    - name: Conectar a AWS y actualizar el contenedor
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          # A) Descarga la caja más nueva que el robot acaba de hacer
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/api-emociones:latest
+          
+          # B) Apaga y borra la caja vieja (si existe) para no tener choques
+          sudo docker stop api_corriendo || true
+          sudo docker rm api_corriendo || true
+          
+          # C) Enciende la caja nueva (El comando que seleccionaste en la guía)
+          sudo docker run -d -p 5000:5000 --name api_corriendo ${{ secrets.DOCKER_USERNAME }}/api-emociones:latest
+          
+          # Opcional: Limpiar imágenes viejas para no llenar el disco de AWS
+          sudo docker image prune -f
