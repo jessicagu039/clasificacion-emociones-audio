@@ -23,6 +23,7 @@
             <h1 class="text-2xl font-bold">Detección de Emociones por Voz</h1>
         </div>
     </header>
+    
 
     <main class="container mx-auto p-6 max-w-5xl">
 
@@ -203,13 +204,13 @@
 
             // Usamos las etiquetas en el orden de tu modelo.
             // Nota: Si tu modelo retorna 5 clases, asumiremos este orden general para el gráfico:
-            const labels = ['Clase 0', 'Clase 1', 'Clase 2', 'Clase 3', 'Clase 4'];
+            const labels = ['Clase 0', 'Clase 1', 'Clase 2', 'Clase 3', 'Clase 4','Clase 5'];
             // Podrías pasarlas desde Python, pero para evitar errores lo mantenemos simple.
 
             myChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Alegría / Happy', 'Tristeza / Sad', 'Enojo / Anger', 'Miedo / Fear', 'Neutral'],
+                    labels: ['Enojo / Anger', 'Disgusto / Disgust', 'Miedo/ Fear', 'Felicidad / Happiness', 'Neutral / Neutral', 'Tristeza / Sadness'],
                     datasets: [{
                         label: 'Probabilidad (%)',
                         data: dataValues,
