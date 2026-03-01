@@ -1,0 +1,21 @@
+# 1. Empezamos con una computadora limpia que ya tiene Python 3.10
+FROM python:3.10-slim
+
+# 2. Instalamos 'ffmpeg', un programa vital para que Python pueda leer archivos .wav
+RUN apt-get update && apt-get install -y ffmpeg libsndfile1 && rm -rf /var/lib/apt/lists/*
+
+# 3. Le decimos a Docker que trabajaremos dentro de una carpeta llamada /app
+WORKDIR /app
+
+# 4. Copiamos tu lista de librerías y las instalamos (incluyendo el parche de urllib3 que arregló tu error antes)
+COPY requirements.txt .
+RUN pip install --upgrade pip && \
+    pip install "urllib3<2" && \
+    pip install --no-cache-dir -r requirements.txt
+
+# 5. Copiamos TODOS tus archivos (app.py, templates, model) adentro de la caja
+COPY . .
+
+# 6. Encendemos el servidor en el puerto 5000
+EXPOSE 5000
+CMD ["gunicorn", "--workers", "2", "--bind", "0.0.0.0:5000", "--timeout", "120", "app:app"]
