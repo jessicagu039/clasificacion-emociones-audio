@@ -41,12 +41,12 @@ jobs:
           # A) Descarga la caja más nueva que el robot acaba de hacer
           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/api-emociones:latest
           
-          # B) Apaga y borra la caja vieja (si existe) para no tener choques
-          sudo docker stop api_corriendo || true
-          sudo docker rm api_corriendo || true
+          # B) Apaga y borra la caja vieja (api_emo) para liberar el puerto 5000
+          sudo docker stop api_emo || true
+          sudo docker rm api_emo || true
           
           # C) Enciende la caja nueva inyectando el modelo pesado desde el servidor AWS
-          sudo docker run -d -p 5000:5000 -v /home/ubuntu/clasificacion-emociones-audio/model:/app/model --name api_corriendo ${{ secrets.DOCKER_USERNAME }}/api-emociones:latest
+          sudo docker run -d -p 5000:5000 -v /home/ubuntu/clasificacion-emociones-audio/model:/app/model --name api_emo ${{ secrets.DOCKER_USERNAME }}/api-emociones:latest
           
           # Opcional: Limpiar imágenes viejas para no llenar el disco de AWS
           sudo docker image prune -f
