@@ -1,6 +1,6 @@
 name: Despliegue Automático SER (CI/CD)
 
-# Esto le dice a GitHub que ejecute el robot cada vez que hagas push a la rama 'main'
+# Este disparador activa el robot cada vez que haces push a la rama main
 on:
   push:
     branches: [ "main" ]
@@ -10,27 +10,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. El robot descarga tu código de GitHub
+    # 1. El robot descarga el código desde tu repositorio de GitHub
     - name: Descargar código fuente
       uses: actions/checkout@v3
 
-    # 2. El robot inicia sesión en tu cuenta de Docker Hub
+    # 2. El robot se autentica en tu cuenta de Docker Hub
     - name: Iniciar sesión en Docker Hub
       uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    # 3. El robot "cocina" tu caja (Dockerfile) y la sube a tu Docker Hub
+    # 3. El robot construye la imagen basándose en tu Dockerfile y la sube a la nube
     - name: Construir y subir imagen a Docker Hub
       uses: docker/build-push-action@v4
       with:
         context: .
         push: true
-        # Nombra la imagen usando tu usuario de Docker
+        # Asegúrate de que el nombre de la imagen sea el que configuraste en los secretos
         tags: ${{ secrets.DOCKER_USERNAME }}/api-emociones:latest
 
-    # 4. El robot se conecta a tu AWS y actualiza el servidor
+    # 4. El robot entra a tu servidor AWS para actualizar el contenedor
     - name: Conectar a AWS y actualizar el contenedor
       uses: appleboy/ssh-action@master
       with:
@@ -38,15 +38,20 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          # A) Descarga la caja más nueva que el robot acaba de hacer
+          # A) Bajamos la versión más reciente de la imagen
           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/api-emociones:latest
           
-          # B) Apaga y borra la caja vieja (api_emo) para liberar el puerto 5000
+          # B) Detenemos el proceso anterior si existe (api_emo)
           sudo docker stop api_emo || true
           sudo docker rm api_emo || true
           
-          # C) Enciende la caja nueva inyectando el modelo pesado desde el servidor AWS
-          sudo docker run -d -p 5000:5000 -v /home/ubuntu/clasificacion-emociones-audio/model:/app/model --name api_emo ${{ secrets.DOCKER_USERNAME }}/api-emociones:latest
+          # C) IMPORTANTE: Encendemos la nueva versión con las rutas de la carpeta 'tablero'
+          # El volumen mapea la carpeta física de tu AWS a la ruta /app/tablero/model dentro del contenedor
+          sudo docker run -d \
+            -p 5000:5000 \
+            -v /home/ubuntu/clasificacion-emociones-audio/tablero/model:/app/tablero/model \
+            --name api_emo \
+            ${{ secrets.DOCKER_USERNAME }}/api-emociones:latest
           
-          # Opcional: Limpiar imágenes viejas para no llenar el disco de AWS
+          # Limpiamos imágenes viejas para no saturar el disco duro de AWS
           sudo docker image prune -f
