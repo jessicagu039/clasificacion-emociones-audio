@@ -1,6 +1,5 @@
 name: Despliegue Automático SER (CI/CD)
 
-# Este disparador activa el robot cada vez que haces push a la rama main
 on:
   push:
     branches: [ "main" ]
@@ -10,27 +9,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. El robot descarga el código desde tu repositorio de GitHub
     - name: Descargar código fuente
       uses: actions/checkout@v3
 
-    # 2. El robot se autentica en tu cuenta de Docker Hub
     - name: Iniciar sesión en Docker Hub
       uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    # 3. El robot construye la imagen basándose en tu Dockerfile y la sube a la nube
     - name: Construir y subir imagen a Docker Hub
       uses: docker/build-push-action@v4
       with:
         context: .
         push: true
-        # Asegúrate de que el nombre de la imagen sea el que configuraste en los secretos
         tags: ${{ secrets.DOCKER_USERNAME }}/api-emociones:latest
 
-    # 4. El robot entra a tu servidor AWS para actualizar el contenedor
+
     - name: Conectar a AWS y actualizar el contenedor
       uses: appleboy/ssh-action@master
       with:
@@ -38,20 +33,17 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          # A) Bajamos la versión más reciente de la imagen desde Docker Hub
+
           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/api-emociones:latest
           
-          # B) Detenemos y borramos el contenedor anterior para liberar el puerto 5000
           sudo docker stop api_emo || true
           sudo docker rm api_emo || true
-          
-          # C) Encendemos la nueva versión
-          # NOTA: Mapeamos el puerto 5000 y conectamos la carpeta del modelo de AWS al contenedor
+
+          # Se mapea el puerto 5000 y se conecta a la carpeta del modelo de AWS al contenedor
           sudo docker run -d \
             -p 5000:5000 \
             -v /home/ubuntu/clasificacion-emociones-audio/tablero/model:/app/tablero/model \
             --name api_emo \
             ${{ secrets.DOCKER_USERNAME }}/api-emociones:latest
           
-          # Limpiamos imágenes huérfanas para ahorrar espacio en el disco de AWS
           sudo docker image prune -f
