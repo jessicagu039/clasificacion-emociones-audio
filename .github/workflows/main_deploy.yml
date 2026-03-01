@@ -45,8 +45,8 @@ jobs:
           sudo docker stop api_corriendo || true
           sudo docker rm api_corriendo || true
           
-          # C) Enciende la caja nueva (El comando que seleccionaste en la guía)
-          sudo docker run -d -p 5000:5000 --name api_corriendo ${{ secrets.DOCKER_USERNAME }}/api-emociones:latest
+          # C) Enciende la caja nueva inyectando el modelo pesado desde el servidor AWS
+          sudo docker run -d -p 5000:5000 -v /home/ubuntu/clasificacion-emociones-audio/model:/app/model --name api_corriendo ${{ secrets.DOCKER_USERNAME }}/api-emociones:latest
           
           # Opcional: Limpiar imágenes viejas para no llenar el disco de AWS
           sudo docker image prune -f
