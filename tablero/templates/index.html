@@ -51,7 +51,7 @@
             </button>
         </div>
 
-        <!-- Resultados (Ocultos inicialmente) -->
+        <!-- Resultados-->
         <div id="resultsArea" class="hidden transition-opacity duration-500 opacity-0">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
 
@@ -89,7 +89,7 @@
                             </path>
                         </svg>
 
-                        <!-- IMAGEN REAL DEL BACKEND (Inicialmente oculta) -->
+                        <!-- IMAGEN REAL DEL BACKEND  -->
                         <img id="spectrogramImage" src="" alt="Espectrograma"
                             class="absolute inset-0 w-full h-full object-fill hidden z-20">
                     </div>
@@ -120,7 +120,6 @@
 
         let myChart = null;
 
-        // ESTA ES LA FUNCIÓN CLAVE QUE CONECTA CON TU API
         async function realizarAnalisis() {
             const input = document.getElementById('audioInput');
             if (input.files.length === 0) {
@@ -166,7 +165,7 @@
             resultsArea.classList.remove('hidden');
             setTimeout(() => resultsArea.classList.remove('opacity-0'), 10);
 
-            // 1. Diccionario de Emojis (Soporta español o inglés según como entrenaste el modelo)
+            // 1. Diccionario de Emojis 
             const emojiMap = {
                 'Alegría': '😄', 'Happy': '😄', 'Happiness': '😄',
                 'Tristeza': '😢', 'Sadness': '😢', 'Sad': '😢',
@@ -202,11 +201,8 @@
             const ctx = document.getElementById('emotionChart').getContext('2d');
             if (myChart) myChart.destroy();
 
-            // Usamos las etiquetas en el orden de tu modelo.
-            // Nota: Si tu modelo retorna 5 clases, asumiremos este orden general para el gráfico:
             const labels = ['Clase 0', 'Clase 1', 'Clase 2', 'Clase 3', 'Clase 4','Clase 5'];
-            // Podrías pasarlas desde Python, pero para evitar errores lo mantenemos simple.
-
+            
             myChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
