@@ -1,14 +1,3 @@
-"""
-Classical ML Emotion Classification Pipeline - Production Version
------------------------------------------------------------------
-This script implements a robust Machine Learning pipeline for Speech Emotion Recognition
-using classical algorithms (SVM, Random Forest, XGBoost) and handcrafted acoustic features.
-Designed to run on an AWS EC2 instance, integrating S3 for data ingestion and 
-a local/remote MLflow server for experiment tracking.
-
-Author: Yessica Adriana Tique
-Role: Machine Learning Engineer
-"""
 
 import os
 import io
@@ -54,7 +43,7 @@ logger = logging.getLogger(__name__)
 warnings.filterwarnings('ignore')
 
 # ============================================================================
-# CONFIGURACIÓN DE AWS S3 Y MLFLOW (CONSTANTES GLOBALES)
+# CONFIGURACIÓN DE AWS S3 Y MLFLOW (
 # ============================================================================
 S3_BUCKET = "amzn-s3-maia-mesd-2026"
 S3_PREFIX = "raw/all-wavs/MexicanEmotionalSpeechDatabase/" 
@@ -415,4 +404,5 @@ def execute_pipeline():
     logger.info("=== ALL CLASSICAL MODELS COMPLETED SUCESSFULLY ===")
 
 if __name__ == "__main__":
+
     execute_pipeline()
