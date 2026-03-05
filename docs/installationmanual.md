@@ -108,7 +108,7 @@ docker run -d -p 8001:8001 --name emotion_container \
 docker logs emotion_container
 ```
 
-### B. Despliegue con Docker Compose (Recomendado)
+### B. Despliegue con Docker Compose 
 
 Si ya tienes Docker y Docker Compose instalados en tu máquina local o en EC2, sigue este método:
 
@@ -150,3 +150,4 @@ Si ya tienes Docker y Docker Compose instalados en tu máquina local o en EC2, s
 # 4. Verificación del Sistema
 
 Para verificar que la instalación fue exitosa, abre tu navegador y visita <http://localhost:8001> (local) o http://IP_PUBLICA:8001 (AWS). Deberías ver la interfaz principal del dashboard. También puedes verificar el estado interno de la aplicación consultando los registros del contenedor ejecutando sudo docker logs api_ser, lo cual confirmará si el modelo y los datos de S3 se inicializaron correctamente en el servidor.
+
